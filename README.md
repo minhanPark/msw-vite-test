@@ -74,3 +74,28 @@ export const handlers = [
 ```
 
 - 공통으로 사용할 기능들은 util 등을 만들어 사용하면 좋다.(좀 더 여러가지를 활용하기 위해 delay 함수와 backendUrl을 util에 넣고 사용함)
+
+### 연결하기
+
+```ts
+async function enableMocking() {
+  if (process.env.NODE_ENV === "production") {
+    return;
+  }
+  const { worker } = await import("./mocks/browser.ts");
+  return worker.start();
+}
+
+enableMocking().then(() => {
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+});
+```
+
+위와 같이 비동기 enableMocking 함수를 만들어준다. 안에서는 환경에 따라 msw를 실행할 지 하지 않을 지를 구분해서 리턴해주고, msw를 실행할 때는 worker.start()를 호출해준다.
+해당 함수를 비동기로 만들어준 이유는 워커는 비동기 함수이고 밑에 createRoot와 경쟁상태를 막기 위함이다.
+
+> 위와 같이 하고 브라우저에서 콘솔을 확인해보면 msw가 동작하는 것을 확인할 수 있다.
