@@ -75,6 +75,18 @@ export const handlers = [
 
 - 공통으로 사용할 기능들은 util 등을 만들어 사용하면 좋다.(좀 더 여러가지를 활용하기 위해 delay 함수와 backendUrl을 util에 넣고 사용함)
 
+```ts
+http.patch(url + "/:id", async ({ params, request }) => {
+    const submittedData = (await request.json()) as unknown;
+    const { id } = params;
+    console.log(submittedData, id);
+    return HttpResponse.json({ content: true });
+  }),
+```
+
+handler에서 body로 온 부분은 **await request.json()** 으로 변환해서 사용할 수 있다.  
+params로 온 부분은 매개변수로 params를 받아서 그 안에서 꺼내서 사용할 수 있다.
+
 ### 연결하기
 
 ```ts
