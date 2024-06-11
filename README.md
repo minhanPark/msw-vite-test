@@ -87,6 +87,10 @@ http.patch(url + "/:id", async ({ params, request }) => {
 handler에서 body로 온 부분은 **await request.json()** 으로 변환해서 사용할 수 있다.  
 params로 온 부분은 매개변수로 params를 받아서 그 안에서 꺼내서 사용할 수 있다.
 
+> params를 사용할 떄 조심할 점은 배열을 위에서 부터 파악해서 매치가 되면 뒤에껀 실행시키지 않는 것 같다는 점이다.  
+> /clients/:id와 /clients/name이 있을 때 /clients/name으로 요청을 보내더라도 /clients/:id가 배열에 앞에 정의되어 있다면  
+> 먼저 매치가 되기 때문에 /clients/:id가 실행된다. **즉 params는 같은 url 레벨에서는 뒤에 정의**하자.
+
 ### 연결하기
 
 ```ts
