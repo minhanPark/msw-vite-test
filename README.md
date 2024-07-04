@@ -76,16 +76,18 @@ export const handlers = [
 - 공통으로 사용할 기능들은 util 등을 만들어 사용하면 좋다.(좀 더 여러가지를 활용하기 위해 delay 함수와 backendUrl을 util에 넣고 사용함)
 
 ```ts
-http.patch(url + "/:id", async ({ params, request }) => {
+http.patch(url + "/:id", async ({ params, request, cookies }) => {
     const submittedData = (await request.json()) as unknown;
     const { id } = params;
     console.log(submittedData, id);
+    console.log(cookies.token) // cookie에 token이라는 key를 가진 값이 있다면 출력
     return HttpResponse.json({ content: true });
   }),
 ```
 
-handler에서 body로 온 부분은 **await request.json()** 으로 변환해서 사용할 수 있다.  
-params로 온 부분은 매개변수로 params를 받아서 그 안에서 꺼내서 사용할 수 있다.
+handler에서 **body**로 온 부분은 **await request.json()** 으로 변환해서 사용할 수 있다.  
+**params**로 온 부분은 **매개변수로 params**를 받아서 그 안에서 꺼내서 사용할 수 있다.
+**cookie**는 **매개변수로 cookies**를 받아서 접근할 수 있다.
 
 > params를 사용할 떄 조심할 점은 배열을 위에서 부터 파악해서 매치가 되면 뒤에껀 실행시키지 않는 것 같다는 점이다.  
 > /clients/:id와 /clients/name이 있을 때 /clients/name으로 요청을 보내더라도 /clients/:id가 배열에 앞에 정의되어 있다면  
@@ -99,7 +101,16 @@ async function enableMocking() {
     return;
   }
   const { worker } = await import("./mocks/browser.ts");
-  return worker.start();
+  return worker.start({
+    // 해당 부분은 브라우저에서 정적파일에 대한 요청이 왔을 때 어떻게 처리할 지에 대한 부분
+    // 테스트를 통과하면(정적파일 일 경우) 리턴을 통해서 종료시키고, 테스트를 통과하지 않으면 warning을 해준다.
+    onUnhandledRequest(req, print) {
+      if (/\.(png|jpg|svg|tsx?|css|jsx?|woff2|ttf|otf)$/.test(req.url)) {
+        return;
+      }
+      print.warning();
+    },
+  });
 }
 
 enableMocking().then(() => {
@@ -114,4 +125,5 @@ enableMocking().then(() => {
 위와 같이 비동기 enableMocking 함수를 만들어준다. 안에서는 환경에 따라 msw를 실행할 지 하지 않을 지를 구분해서 리턴해주고, msw를 실행할 때는 worker.start()를 호출해준다.
 해당 함수를 비동기로 만들어준 이유는 워커는 비동기 함수이고 밑에 createRoot와 경쟁상태를 막기 위함이다.
 
-> 위와 같이 하고 브라우저에서 콘솔을 확인해보면 msw가 동작하는 것을 확인할 수 있다.
+> 위와 같이 하고 브라우저에서 콘솔을 확인해보면 msw가 동작하는 것을 확인할 수 있다.  
+> onUnhandledRequest을 처리해주지 않으면 콘솔에 워닝이 많이 뜬다. 폰트 등의 정적파일 및 크롬 익스텐션 떄문에.
