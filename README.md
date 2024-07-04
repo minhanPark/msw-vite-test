@@ -81,13 +81,15 @@ http.patch(url + "/:id", async ({ params, request, cookies }) => {
     const { id } = params;
     console.log(submittedData, id);
     console.log(cookies.token) // cookie에 token이라는 key를 가진 값이 있다면 출력
+    const token = request.headers.get("Authorization"); // headers에 접근해서 값을 가져오려면 위와 같이 사용
     return HttpResponse.json({ content: true });
   }),
 ```
 
 handler에서 **body**로 온 부분은 **await request.json()** 으로 변환해서 사용할 수 있다.  
-**params**로 온 부분은 **매개변수로 params**를 받아서 그 안에서 꺼내서 사용할 수 있다.
-**cookie**는 **매개변수로 cookies**를 받아서 접근할 수 있다.
+**params**로 온 부분은 **매개변수로 params**를 받아서 그 안에서 꺼내서 사용할 수 있다.  
+**cookie**는 **매개변수로 cookies**를 받아서 접근할 수 있다.  
+**headers**는 **request.headers.get(키이름)**로 접근할 수 있다.
 
 > params를 사용할 떄 조심할 점은 배열을 위에서 부터 파악해서 매치가 되면 뒤에껀 실행시키지 않는 것 같다는 점이다.  
 > /clients/:id와 /clients/name이 있을 때 /clients/name으로 요청을 보내더라도 /clients/:id가 배열에 앞에 정의되어 있다면  
